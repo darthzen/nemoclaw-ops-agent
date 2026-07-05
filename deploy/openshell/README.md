@@ -33,3 +33,36 @@ Gateway deployed via the official experimental Helm chart
   StorageClasses on ash4d (local-path + longhorn both marked default — a latent
   cluster misconfig worth fixing separately).
 - mTLS is on by default; CLI access needs the `openshell-client-tls` material.
+
+---
+
+## T-011 resolved (2026-07-05) — real sandbox running, isolation proven
+
+The gateway-created OpenShell supervisor pod is **privileged by design**
+(`runAsUser:0`, caps `SYS_ADMIN,NET_ADMIN,SYS_PTRACE,SYSLOG`, AppArmor
+Unconfined) — it builds the agent's Landlock/seccomp/netns sandbox from inside
+the pod. PSA `restricted` **and** `baseline` both reject it. Resolution:
+
+- Sandbox pods run in a dedicated **`nemoclaw-sandboxes`** namespace at PSA
+  **`privileged`** (`deploy/sandboxes/00-namespace-and-netpol.yaml`); the
+  control-plane ns `nemoclaw` stays `restricted`.
+- Gateway repointed via `server.sandboxNamespace=nemoclaw-sandboxes`.
+- Gateway auth: **dev-principal lab mode** (`server.auth.allowUnauthenticatedUsers=true`)
+  — mTLS still enforced for transport; LAN-only. OIDC is the production path.
+- **Cross-ns secret dependency:** the sandbox mounts `openshell-client-tls`
+  (its mTLS creds to the gateway). When `sandboxNamespace` != release namespace,
+  that secret must be replicated into the sandbox ns (copied from `openshell`).
+- Base sandbox image `ghcr.io/nvidia/openshell-community/sandboxes/base:latest`
+  is ~1.4 GB (first pull ~2m20s; cached after).
+
+### Isolation proven (from inside the running privileged pod)
+
+| Target | Policy | Result |
+|---|---|---|
+| Ollama `10.43.151.251:11434` | allow | **REACHABLE** |
+| kube-dns `10.43.0.10:53` | allow | **REACHABLE** |
+| LAN k8s API `192.168.7.149:6443` | deny (RFC1918) | **blocked/timeout** |
+
+So even a root + `SYS_ADMIN` pod cannot reach the LAN — confinement comes from
+the egress NetworkPolicy, not pod privilege. Windowed hardening still to add
+(T-011b): node SELinux + a kata/gVisor `runtimeClass` microVM boundary.
