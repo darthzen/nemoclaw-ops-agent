@@ -5,7 +5,11 @@ built on NVIDIA's NemoClaw/OpenShell hardened stack around OpenClaw — deployed
 k8s-native, inferencing entirely on-prem (Ollama/Qwen3 on a V100), with a
 documented autonomy ladder and human-in-the-loop approval over Slack.
 
-**Status: pre-build.** Design is locked in [PLAN.md](PLAN.md); work is tracked
+![NemoClaw Ops Agent — architecture](docs/nemoclaw_architecture.png)
+
+**Status: live build.** The OpenShell gateway, agent-sandbox controller, scoped
+RBAC contract, and an egress-locked sandbox are running on the cluster (isolation
+verified from inside the pod). Design is locked in [PLAN.md](PLAN.md); work is tracked
 as GitHub Issues on the project board, driven by
 [agent-build-tools](https://github.com/darthzen/agent-build-tools) — tickets
 are executed by AI agents (local Qwen3 first, Claude Haiku/Sonnet where
