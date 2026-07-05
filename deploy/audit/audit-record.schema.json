@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/darthzen/nemoclaw-ops-agent/deploy/audit/audit-record.schema.json",
+  "title": "NemoClaw ops-agent audit record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version","step_id","incident_id","ts","phase","signal","identity","autonomy_level","what","why","outcome"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "step_id": {"type": "string", "format": "uuid"},
+    "incident_id": {"type": "string", "format": "uuid"},
+    "parent_step_id": {"type": ["string","null"], "format": "uuid"},
+    "ts": {"type": "string", "format": "date-time"},
+    "phase": {"enum": ["detect","diagnose","hypothesize","escalate","decision","act","audit","recover"]},
+    "signal": {"type": "string", "minLength": 1},
+    "identity": {"enum": ["sa-nemoclaw-observe","sa-nemoclaw-deploy","human","system"]},
+    "autonomy_level": {"enum": ["v1-read-annotate","v2-approval-mutation","v3-autonomous-heal"]},
+    "what": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action","tool"],
+      "properties": {
+        "action": {"type": "string"},
+        "tool": {"type": "string"},
+        "params_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "target_ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "apiGroup": {"type": "string"},
+            "kind": {"type": "string"},
+            "namespace": {"type": "string"},
+            "name": {"type": "string"},
+            "uid": {"type": "string"}
+          }
+        }
+      }
+    },
+    "why": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rationale"],
+      "properties": {
+        "rationale": {"type": "string"},
+        "evidence_refs": {"type": "array", "items": {"type": "string"}},
+        "model": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["ok","noop","blocked","denied","error","awaiting-approval"]},
+        "detail": {"type": "string"},
+        "changed": {"type": "array", "items": {"type": "object"}},
+        "duration_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    "approval": {
+      "type": ["object","null"],
+      "additionalProperties": false,
+      "properties": {
+        "required": {"type": "boolean"},
+        "channel": {"type": "string"},
+        "requested_ts": {"type": "string", "format": "date-time"},
+        "decided_ts": {"type": ["string","null"], "format": "date-time"},
+        "decision": {"enum": ["approved","denied","timeout",null]},
+        "decider": {"type": ["string","null"]},
+        "slack_ts": {"type": ["string","null"]}
+      }
+    },
+    "error": {
+      "type": ["object","null"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"type": "string"},
+        "message": {"type": "string"},
+        "retryable": {"type": "boolean"},
+        "attempt": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

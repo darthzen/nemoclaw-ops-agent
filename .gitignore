@@ -1,0 +1,4 @@
+_creds/
+*.kubeconfig
+*.token
+kubeconfig
