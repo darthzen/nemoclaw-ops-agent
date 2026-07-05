@@ -127,3 +127,39 @@ real pod in hand (T-011), not on paper.
 - NemoClaw — Architecture (Docker+embedded-k3s default topology, L7 Privacy Router, sandbox image): https://docs.nvidia.com/nemoclaw/latest/reference/architecture
 - OpenShell — repo + isolation issue (Landlock/seccomp/netns; gVisor/Firecracker eval): https://github.com/NVIDIA/OpenShell and https://github.com/NVIDIA/OpenShell/issues/4
 - kubernetes-sigs/agent-sandbox: https://github.com/kubernetes-sigs/agent-sandbox
+
+---
+
+## Addendum 2026-07-05 — node LSM reality + corrected PSA guidance
+
+Probed node `sdf1` directly (kernel 6.12, openSUSE Leap 16). Active LSMs:
+`lockdown, capability, landlock, yama, bpf, ima, evm`. **AppArmor is off
+(`/sys/module/apparmor/parameters/enabled = N`); SELinux is absent.** Landlock
+is present and active.
+
+Consequences:
+- The chart's `appArmorProfile: Unconfined` is a **no-op on this node** — no
+  AppArmor is loaded to un/confine anything. PSA `restricted`/`baseline` still
+  *reject* the literal `Unconfined` value on the pod spec, so **set
+  `server.appArmorProfile: ""` (omit)** to clear the only AppArmor-vs-PSA
+  conflict at zero behavioral cost here.
+- Real MAC confinement today = **Landlock + seccomp + cap-drop-ALL
+  (+NET_BIND_SERVICE) + no-new-privileges + read-only root + netns**, all applied
+  by the OpenShell supervisor / NemoClaw sandbox image and supported by kernel
+  6.12. This is the honest security narrative (Landlock/BPF-LSM, the modern SUSE
+  direction), not an AppArmor profile.
+- **PSA target:** hold `nemoclaw` at `restricted`, omit AppArmor, and launch one
+  sandbox to read the exact admission verdict. Step to `baseline` only if a
+  specific `restricted` control (likely a capability the supervisor's netns setup
+  needs) actually fails. Determine empirically, don't pre-loosen.
+
+### Planned additive hardening (windowed — T-011b)
+
+Enable a node MAC LSM by reboot as a defense-in-depth layer atop Landlock.
+Recommended **AppArmor** for chart fit: the chart's `appArmorProfile` knob then
+lets us ship a **custom `Localhost/` profile** that permits the supervisor's
+netns mount setup while confining the rest — a PSA-`restricted`-legal value
+(RuntimeDefault/Localhost) and a strong portfolio artifact. SELinux is the
+SUSE-16-strategic alternative (stronger, more granular) but has no chart knob,
+needs k3s `--selinux` + the k3s-selinux policy, and a hand-authored type. Not on
+the M1 critical path.

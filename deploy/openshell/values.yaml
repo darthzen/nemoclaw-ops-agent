@@ -1,0 +1,17 @@
+# OpenShell gateway Helm values (T-011). Chart: oci://ghcr.io/nvidia/openshell/helm-chart
+# Install:
+#   helm upgrade --install openshell oci://ghcr.io/nvidia/openshell/helm-chart \
+#     --version 0.0.0-dev --namespace openshell --create-namespace \
+#     --values deploy/openshell/values.yaml --wait
+#
+# Verified live 2026-07-05 on ash4d (k3s v1.35.5): openshell-0 Ready 1/1,
+# PVC bound to longhorn, PKI hooks generated TLS+JWT secrets, sandbox SA
+# openshell-sandbox created in nemoclaw. Gateway svc openshell.openshell:8080.
+server:
+  # sandboxes land in our hardened namespace (netpol + RBAC apply to them)
+  sandboxNamespace: nemoclaw
+  sandboxImagePullPolicy: IfNotPresent
+  # AppArmor Unconfined is the chart default and is REQUIRED for the supervisor's
+  # netns setup — this is why the sandbox namespace cannot be PSA 'restricted'.
+  # (Decision pending: set nemoclaw PSA to 'baseline'. See README.md.)
+# supervisor.sideloadMethod: auto-detects image-volume on k8s >= 1.35 (this cluster).
