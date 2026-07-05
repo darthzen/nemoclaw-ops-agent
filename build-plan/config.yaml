@@ -1,7 +1,7 @@
 project:
   name: nemoclaw-ops-agent
   repo: "darthzen/nemoclaw-ops-agent"
-  # project_number: (board creation failed — set manually)
+  project_number: 3
   build_through: M1
   board_status: false
 projects: {}
