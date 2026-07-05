@@ -1,0 +1,11 @@
+project:
+  name: nemoclaw-ops-agent
+  repo: "darthzen/nemoclaw-ops-agent"
+  project_number: PROJECT_NUM_PLACEHOLDER
+  build_through: M1
+  board_status: false
+projects: {}
+tooling:
+  runnable: [bash, sh, python, python3, kubectl, kubeconform, helm, pytest, shellcheck, cd]
+  schema_doc: PLAN.md
+  default_acceptance: "bash -n deploy/noop.sh"
