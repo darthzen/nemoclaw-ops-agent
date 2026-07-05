@@ -1,0 +1,15 @@
+{
+  "env": { "OLLAMA_API_KEY": "ollama-local" },
+  "agents": { "defaults": { "model": { "primary": "ollama/qwen3-coder:30b" } } },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "ollama": {
+        "baseUrl": "http://ollama.ai:11434",
+        "models": [
+          { "id": "qwen3-coder:30b", "name": "Qwen3 Coder 30B", "reasoning": false, "input": ["text"], "contextWindow": 262144, "maxTokens": 8192 }
+        ]
+      }
+    }
+  }
+}
