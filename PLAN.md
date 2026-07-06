@@ -1,7 +1,8 @@
 # NemoClaw Ops Agent — Portfolio Plan
 
-**Status:** Design confirmed — pre-build (rev 2)
-**Date:** 2026-07-05 (rev 1: 2026-07-04)
+**Status:** Design locked (rev 2). **Build is live** — M0 complete, M1 in progress on the cluster.
+**Authoritative status:** the [GitHub project board](https://github.com/darthzen/nemoclaw-ops-agent/milestones) and repo [README](https://github.com/darthzen/nemoclaw-ops-agent#readme) — not this file. This doc is the design; the board is the state.
+**Date:** 2026-07-05 (rev 1: 2026-07-04) · status header refreshed 2026-07-06
 **Purpose:** A genuine, self-hosted autonomous-agent build on OpenClaw/NemoClaw, deployed against the ash4d k3s lab. Reusable portfolio proof that converts the "do you have OpenClaw/NemoClaw experience?" gate into "yes — here's the repo, the writeup, and a live demo" for any future posting in that category.
 
 > Built for the asset and the next opportunity. The reference job (Senior Python / Claw-style agents) is already deep in interviews; this outlives it.
@@ -156,5 +157,9 @@ Fleet (GitOps) · rancher-monitoring (Prometheus + Alertmanager) · dcgm-exporte
 
 ## Next steps
 
-- [ ] Research items 1–4 above (one research pass)
-- [ ] Draft DEPLOY.md targeting k3s (spine §4, order §11) + repo scaffold
+Build is underway; live status lives on the board. The rev-2 next-steps below all landed:
+
+- [x] Research items 1–4 → `docs/openshell-k8s.md` (T-004) and `docs/integration-notes.md` (T-005) in the repo
+- [x] Repo scaffold + k3s deploy manifests → live at github.com/darthzen/nemoclaw-ops-agent (`deploy/` — rbac, netpol, openshell, sandboxes, audit)
+
+Current front line (from the board): close out M1 (T-010 netpol bookkeeping, T-014 Slack connect), then file and build M2 (cert-expiry MVP loop).
